@@ -153,6 +153,7 @@
 %TC:endignore
 \pagenumbering{roman}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TC:ignore
 % Acknowledgements
 \section*{Acknowledgements}
 \addcontentsline{toc}{section}{Acknowledgements}
@@ -162,6 +163,7 @@ Throughout the journey of my Independent Research Project, I am profoundly grate
 First things first, I wish to express my deepest appreciation to my supervisors, Dr. Boyang Chen and Dr. Christopher Pain, who have offered me insightful guidance and suggestions throughout the project. Their expertise, commitment, and instructions have not only been essential in helping me address the challenges of this work but have also significantly contributed to my academic development and growth as a researcher. \\
 
 I want to express my heartfelt gratitude to my friends and everyone who has supported me throughout this incredible year of earning my MSc degree at Imperial College London. Your encouragement has meant the world to me.
+%TC:endignore
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % table of contents
@@ -378,7 +380,7 @@ As for the running environment, the system is tested on Python 3.11 with PyTorch
 
 \subsection{Results and discussion}
 \subsubsection{First stage: CAE reconstruction performance}
-Based on the findings by Rombach \textit{et al.} \cite{rombach2022highresolution} and Gao \textit{et al.} \cite{gao2024prediff}, the performance of the Latent Diffusion model is highly dependent on the autoencoder trained in the first stage. Therefore, it is crucial to evaluate the effectiveness of the first-stage autoencoder's ability to compress the grid of high dimensionality into a meaningful latent space and accurately captures the underlying physical dynamics when reconstructing back to the original data. The CAE was configured with a latent size of 1024, which achieved a compression ratio of approximately 1792($7 \times 32 \times 64 \times 128 / 1024$). Then, the CAE's reconstruction performance was assessed in terms of four fields 'CO2 Tracer', 'Temperature', 'Vx', and 'Vy'. These results were examined and presented as xy-slices at a height corresponding to z\_idx=16, at time points of $t = 1500s, 3000s, 4500s$ respectively. The former two time points are from the training set while the data at $t = 4500s$ were drawn from the unseen data.\\
+Based on the findings by Rombach \textit{et al.} \cite{rombach2022highresolution} and Gao \textit{et al.} \cite{gao2024prediff}, the performance of the Latent Diffusion model is highly dependent on the autoencoder trained in the first stage. Therefore, it is crucial to evaluate the effectiveness of the first-stage autoencoder's ability to compress the grid of high dimensionality into a meaningful latent space and accurately captures the underlying physical dynamics when reconstructing back to the original data. The CAE was configured with a latent size of 1024, which achieved a compression ratio of approximately 1792 ($7 \times 32 \times 64 \times 128 / 1024$). Then, the CAE's reconstruction performance was assessed in terms of four fields 'CO2 Tracer', 'Temperature', 'Vx', and 'Vy'. These results were examined and presented as xy-slices at a height corresponding to z\_idx=16, at time points of $t = 1500s, 3000s, 4500s$ respectively. The former two time points are from the training set while the data at $t = 4500s$ were drawn from the unseen data.\\
 
 As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that the CAE model can effectively captures the board physical patterns of the airflow dynamics across different time levels for each physical field in interest. The model also demonstrates similar performance over the unseen data. However, there is noticeable information loss before and after the reconstruction, where the model struggles to capture the nuances of the physical characteristics of the airflow dynamics. When finer details of the spatial variations are required, the model tends to confuse between different subtle nuances and leads to coarser reconstructions.
 %TC:ignore
@@ -415,18 +417,61 @@ As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that
 
 
 \subsubsection{Second stage: LDM prediction performance}
-The expected results should be broadly in accordance with the established objectives in the following aspects:
-\begin{itemize}
-    \item The chosen ROM learns a meaningful representation of the input 3D CFD data in the latent space with significant reduction in dimensionality.
-    \item The LDM model is capable of producing realistic forecasts of the indoor airflow fields that have physical interpretations.
-\end{itemize}
+\textbf{Predicting for the training set:} After the first-stage model was trained, the full 3D grid data was encoded into 1D latent vectors using the encoder $\mathcal{E}$, and scaled to the range $[-1, 1]$ via Min-Max scaling. The diffusion model was then trained on the concatenated sequences of these latent vectors, where the previous 15 frames were used to predict the next one. This choice is due to the tiny changes between consecutive time steps in the original data, although the sequence length can be flexibly adjusted based on the specific characteristics of different datasets. As shown in Figure. \ref{fig:preds_latent}, the model's performance was examined at the time step $t = 2500$s, where the data between $[2500s, 2640s]$ correspond to the observed 15 frames, and then rolling-out predictions was conducted to autoregressively predict the next 10 frames of latent vectors. The prediction results in the latent space has demonstrated the LDM's ability to capture the temporal dynamics within the latent vectors, and can effectively generate predictions that are close to ground truth latent values.
+
+%TC:ignore
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/latent_results.png}
+        \caption{Prediction results of all 1024 dimensions of the latent vectors for the next 10 time steps.}
+    \end{subfigure} \\[5mm]
+    \begin{subfigure}[t]{0.75\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/latent_random_dim.png}
+        \caption{Prediction results of the latent vectors evaluated at random dimensions for the next 10 time steps.}
+    \end{subfigure} 
+    \caption{Latent space predictions results using the LDM for the next 10 time steps where $t \in [2650s, 2740s]$.}
+    \label{fig:preds_latent}
+\end{figure}
+%TC:endignore
+
+Then, the predicted latent vectors were further decoded by the frame-wise decoder $\mathcal{D}$ to evaluate the prediction performance in the physical space. As illustrated in Figure. \ref{fig:pred_results_training}
+
+%TC:ignore
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/temp_10_2650.png}
+        \caption{Original.}
+        \label{fig:temp_pred}
+    \end{subfigure} \\[5mm]
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/vx_10_2650.png}
+        \caption{CAE Reconstruction.}
+        \label{fig:cae_recon}
+    \end{subfigure}
+    \caption{Reconstruction results of the "Temperature" field of the whole mesh at $t=2500s$ by using CAE and POD to compress and reconstruct data respectively.}
+    \label{fig:pred_results_training}
+\end{figure}
+%TC:endignore
 
 
-\begin{itemize}
-    \item Built up packaged code workflow on GitHub for reading, preprocessing, and visualize the 3D CFD data.
-    \item Implemented ROM models such as POD and a Convolutional Autoencoder to perform dimensionality reduction (see reconstruction results in Fig. ), as well as a PredAAE network for forecasting (see training results in Fig. ), similar to the one presented in Heaney's work \cite{heaney2024data}. Also, the data currently used is a subset of the classroom data in her research, only for testing the implemented framework.
-    \item Mostly finished reviewing related literature, and insights have been gleaned regarding the current state of research.
-\end{itemize}
+% The expected results should be broadly in accordance with the established objectives in the following aspects:
+% \begin{itemize}
+%     \item The chosen ROM learns a meaningful representation of the input 3D CFD data in the latent space with significant reduction in dimensionality.
+%     \item The LDM model is capable of producing realistic forecasts of the indoor airflow fields that have physical interpretations.
+% \end{itemize}
+
+
+% \begin{itemize}
+%     \item Built up packaged code workflow on GitHub for reading, preprocessing, and visualize the 3D CFD data.
+%     \item Implemented ROM models such as POD and a Convolutional Autoencoder to perform dimensionality reduction (see reconstruction results in Fig. ), as well as a PredAAE network for forecasting (see training results in Fig. ), similar to the one presented in Heaney's work \cite{heaney2024data}. Also, the data currently used is a subset of the classroom data in her research, only for testing the implemented framework.
+%     \item Mostly finished reviewing related literature, and insights have been gleaned regarding the current state of research.
+% \end{itemize}
 
 % %TC:ignore
 % \begin{figure}[!htb]
@@ -464,15 +509,15 @@ The expected results should be broadly in accordance with the established object
 % %TC:endignore
 
 \subsection{Future Plan}
-\begin{itemize}
-    \item Continuously optimize the existing code workflow to accommodate new data, when CFD data from Direk's meeting room becomes available,
-    \item Retrain the ROM models using Direk's data, and explore alternative methods such as Variational Autoencoders.
-    \item Implement the Latent Diffusion Model for prediction of the airflow dynamics, with a thorough investigation into its architecture and time-series prediction techniques.
-    \item Establish multiple test cases and comparative experiments to verify implementation and uncover future insights.
-    \item Maintain the GitHub repository, leveraging GitHub Actions for automated testing.
-    \item Build documentation using Sphinx.
-    \item Complete the final dissertation write-up.
-\end{itemize}
+% \begin{itemize}
+%     \item Continuously optimize the existing code workflow to accommodate new data, when CFD data from Direk's meeting room becomes available,
+%     \item Retrain the ROM models using Direk's data, and explore alternative methods such as Variational Autoencoders.
+%     \item Implement the Latent Diffusion Model for prediction of the airflow dynamics, with a thorough investigation into its architecture and time-series prediction techniques.
+%     \item Establish multiple test cases and comparative experiments to verify implementation and uncover future insights.
+%     \item Maintain the GitHub repository, leveraging GitHub Actions for automated testing.
+%     \item Build documentation using Sphinx.
+%     \item Complete the final dissertation write-up.
+% \end{itemize}
 
 
 
