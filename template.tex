@@ -362,7 +362,7 @@ The specific configurations for training the CAE model and the latent diffusion 
               \addlinespace
               & \textbf{CAE} & \textbf{LDM}\\
             \midrule
-            Number of epochs & 100 & 50 \\
+            Number of epochs & 200 & 50 \\
             Batch size & 32 & 32 \\
             Optimizer & Adam & Adam \\
             Learning rate & 5e-4 & 1e-4 \\
@@ -422,12 +422,12 @@ As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that
 %TC:ignore
 \begin{figure}[!htb]
     \centering
-    \begin{subfigure}[t]{0.99\textwidth}
+    \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/latent_results.png}
         \caption{Prediction results of all 1024 dimensions of the latent vectors for the next 10 time steps.}
-    \end{subfigure} \\[5mm]
-    \begin{subfigure}[t]{0.75\textwidth}
+    \end{subfigure} \\[8mm]
+    \begin{subfigure}[t]{0.7\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/latent_random_dim.png}
         \caption{Prediction results of the latent vectors evaluated at random dimensions for the next 10 time steps.}
@@ -437,7 +437,7 @@ As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that
 \end{figure}
 %TC:endignore
 
-Then, the predicted latent vectors were further decoded by the frame-wise decoder $\mathcal{D}$ to evaluate the prediction performance in the physical space. As illustrated in Figure. \ref{fig:pred_results_training}
+Then, the predicted latent vectors were further decoded using the frame-wise decoder $\mathcal{D}$, to evaluate prediction performance in the physical space. Figure \ref{fig:pred_results_training} presents the predictions for the fields 'Temperature' and 'Vx' at $t \in [2650s, 2740s]$ in the training set for the next 10 time steps. These results indicate that the latent diffusion model effectively learns meaningful temporal patterns within the fluid field. However, the results seem to have discrepancies in details compared to the ground truth, and some predictions may also violate physical laws, which may generate extremely high temperature values or irregular fluid patterns. We argue that these issues may stem from the limitations of the first-stage autoencoder, which was trained on a single case of the evolution of the indoor airflow, consisting of only 500 frames. Besides, the model was not regularized with any physical laws or guidance during training, which may also likely contribute to these unrealistic predictions. \\
 
 %TC:ignore
 \begin{figure}[!htb]
@@ -445,21 +445,40 @@ Then, the predicted latent vectors were further decoded by the frame-wise decode
     \begin{subfigure}[t]{0.99\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/temp_10_2650.png}
-        \caption{Original.}
-        \label{fig:temp_pred}
-    \end{subfigure} \\[5mm]
+        \caption{Temperature predictions for the next 10 time steps $t \in [2650s, 2740s]$.}
+    \end{subfigure} \\[8mm]
     \begin{subfigure}[t]{0.99\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/vx_10_2650.png}
-        \caption{CAE Reconstruction.}
-        \label{fig:cae_recon}
+        \caption{Vx predictions for the next 10 time steps $t \in [2650s, 2740s]$.}
     \end{subfigure}
-    \caption{Reconstruction results of the "Temperature" field of the whole mesh at $t=2500s$ by using CAE and POD to compress and reconstruct data respectively.}
+    \caption{Prediction results of xy-slice at z\_idx=16 for the fields 'Temperature' and 'Vx' for time step $t \in [2650s, 2740s]$ in the training set.}
     \label{fig:pred_results_training}
 \end{figure}
 %TC:endignore
+\newpage
+\textbf{Predicting for the test set:} To further evaluate the model's capability over unseen data, we also evaluated the predictions at $t = 4200s$ in the test set, where the 15 time points between $[4200s, 4340s]$ served as the previous observed sequence used to condition the latent diffusion model. Figure \ref{fig:pred_results_test} illustrates the predictions for the next 10 frames at $t \in [4350s, 4440s]$ for the 'Temperature' and 'Vx' fields. Consistent with the training set results, the model is capable of capturing board spatial-temporal patterns of the airflow dynamics: for noticeable changes in the temperature field, see the hot spot emerging at the top of the figure through time (Figure \ref{fig:pred_results_test_temp}).
 
+%TC:ignore
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/temp_10_4350.png}
+        \caption{Temperature predictions for the next 10 time steps $t \in [4350s, 4440s]$.}
+        \label{fig:pred_results_test_temp}
+    \end{subfigure} \\[8mm]
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/vx_10_4350.png}
+        \caption{Vx predictions for the next 10 time steps $t \in [4350s, 4440s]$}
+    \end{subfigure}
+    \caption{Prediction results of xy-slice at z\_idx=16 for the fields 'Temperature' and 'Vx' for time step $t \in [4350s, 4440s]$ in the test set.}
+    \label{fig:pred_results_test}
+\end{figure}
+%TC:endignore
 
+However, the results revealed similar issues to those observed in the training set that there were noticeable deviations from local nuances or expected physical behaviours for long-term prediction. Additionally, when the test samples are away from the learned data distribution, such as the early stage of the airflow evolution, the model shows less capability to accurately generate predictions similar to the ground truth. Such limitations highlights the need of incorporating prior guidance or physical constraints during the model training \cite{gao2024prediff, bian2024diffusion}.
 % The expected results should be broadly in accordance with the established objectives in the following aspects:
 % \begin{itemize}
 %     \item The chosen ROM learns a meaningful representation of the input 3D CFD data in the latent space with significant reduction in dimensionality.
@@ -473,31 +492,6 @@ Then, the predicted latent vectors were further decoded by the frame-wise decode
 %     \item Mostly finished reviewing related literature, and insights have been gleaned regarding the current state of research.
 % \end{itemize}
 
-% %TC:ignore
-% \begin{figure}[!htb]
-%     \centering
-%     \begin{subfigure}[t]{0.8\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{figures/original.png}
-%         \caption{Original.}
-%         \label{fig:original}
-%     \end{subfigure} \\[5mm]
-%     \begin{subfigure}[t]{0.8\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{figures/recon_contour_cae.png}
-%         \caption{CAE Reconstruction.}
-%         \label{fig:cae_recon}
-%     \end{subfigure} \\[5mm]
-%     \begin{subfigure}[t]{0.8\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{figures/recon_contour_pca.png}
-%         \caption{POD Reconstruction.}
-%         \label{fig:pod_recon}
-%     \end{subfigure}
-%     \caption{Reconstruction results of the "Temperature" field of the whole mesh at $t=2500s$ by using CAE and POD to compress and reconstruct data respectively.}
-%     \label{fig:recon_results}
-% \end{figure}
-% %TC:endignore
 \clearpage
 % %TC:ignore
 % \begin{figure}[htbp]
