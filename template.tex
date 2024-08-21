@@ -292,7 +292,7 @@ where $T$ is the predefined total amount of diffusion steps, and $\beta_t$ denot
 
 which indicates that one can follow (\ref{eq:reverse_transition}) to reverse from the Gaussian noise $x_T \sim \mathcal{N}(0, I)$ step by step to the true data distribution $x_0 \sim p(x)$ \cite{ho2006diff}. \\
 
-However, due to the nature of high dimensionality in fluid dynamics data, this process can be computationally intensive and challenging to accurately model directly. Thus, the problem of nowcasting indoor airflow dynamics can be formulated in the latent space using a Latent Diffusion Model (LDM) \cite{rombach2022highresolution}.
+% However, due to the nature of high dimensionality in fluid dynamics data, this process can be computationally intensive and challenging to accurately model directly. Thus, the problem of nowcasting indoor airflow dynamics can be formulated in the latent space using a Latent Diffusion Model (LDM) \cite{rombach2022highresolution}.
 
 \subsubsection{Latent diffusion}
 As stated in the original Latent Diffusion Model paper \cite{rombach2022highresolution}, the denoising backbone network can be conditioned to guide and control the generation results of the denoising process, and the condition can be results of any upstream tasks such as text, images, or any latent embeddings. Therefore, following section \ref{meth:overview}, this problem can be formulated as a spatial-temporal prediction problem, and a classic DDPM in the latent space can be constructed to parameterize the latent conditional distribution $p(z_{0:T} | z_{cond})$ based on Equation (\ref{eq:cumprod_reverse}):
@@ -456,7 +456,6 @@ Then, the predicted latent vectors were further decoded using the frame-wise dec
     \label{fig:pred_results_training}
 \end{figure}
 %TC:endignore
-\newpage
 \textbf{Predicting for the test set:} To further evaluate the model's capability over unseen data, we also evaluated the predictions at $t = 4200s$ in the test set, where the 15 time points between $[4200s, 4340s]$ served as the previous observed sequence used to condition the latent diffusion model. Figure \ref{fig:pred_results_test} illustrates the predictions for the next 10 frames at $t \in [4350s, 4440s]$ for the 'Temperature' and 'Vx' fields. Consistent with the training set results, the model is capable of capturing board spatial-temporal patterns of the airflow dynamics: for noticeable changes in the temperature field, see the hot spot emerging at the top of the figure through time (Figure \ref{fig:pred_results_test_temp}).
 
 %TC:ignore
@@ -478,7 +477,7 @@ Then, the predicted latent vectors were further decoded using the frame-wise dec
 \end{figure}
 %TC:endignore
 
-However, the results revealed similar issues to those observed in the training set that there were noticeable deviations from local nuances or expected physical behaviours for long-term prediction. Additionally, when the test samples are away from the learned data distribution, such as the early stage of the airflow evolution, the model shows less capability to accurately generate predictions similar to the ground truth. Such limitations highlights the need of incorporating prior guidance or physical constraints during the model training \cite{gao2024prediff, bian2024diffusion}.
+However, the results revealed similar issues to those observed in the training set that there were noticeable deviations from local nuances or expected physical behaviours for longer prediction. Additionally, when the test samples are away from the learned data distribution, such as the early stage of the airflow evolution, the model shows less capability to accurately generate predictions similar to the ground truth. Such limitations highlights the need of incorporating prior guidance or physical constraints during the model training \cite{gao2024prediff, bian2024diffusion}.
 % The expected results should be broadly in accordance with the established objectives in the following aspects:
 % \begin{itemize}
 %     \item The chosen ROM learns a meaningful representation of the input 3D CFD data in the latent space with significant reduction in dimensionality.
