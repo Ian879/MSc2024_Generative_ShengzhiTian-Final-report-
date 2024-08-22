@@ -198,7 +198,7 @@ Based on the studies conducted by Li \textit{et al.} \cite{Li2022coupled}, many 
 Therefore, the main contributions and objectives of this research are listed as follows:
 \begin{enumerate}
     \item To design a Reduced-order model (ROM) that performs effective dimensionality reduction for 3D structural mesh data.  
-    \item To demonstrate the potential of Latent Diffusion models in surrogate modeling to investigate the spatial and temporal variations of the indoor airflow dynamics.
+    \item To demonstrate the potential of applying Latent Diffusion models into surrogate modeling to investigate the spatial-temporal variations of the indoor airflow dynamics.
     \item To show the validity and ability of the designed model to perform nowcasting of the fluid state at various time steps.
 \end{enumerate}
 
@@ -335,7 +335,7 @@ The dataset involved in this project consists of the full 3D simulations of a le
 %TC:ignore
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=13cm, trim=0cm 0cm 0cm 0cm, clip]{figures/classroom_schema.jpg}
+    \includegraphics[width=13cm, trim=0.05cm 0.05cm 0.05cm 0.05cm, clip]{figures/classroom_schema.png}
     \caption{Schematic diagram of the classroom at Houndsfield Primary School, London.}
     \label{fig:classroom_schema}
 \end{figure}
@@ -456,7 +456,7 @@ Then, the predicted latent vectors were further decoded using the frame-wise dec
     \label{fig:pred_results_training}
 \end{figure}
 %TC:endignore
-\textbf{Predicting for the test set:} To further evaluate the model's capability over unseen data, we also evaluated the predictions at $t = 4200s$ in the test set, where the 15 time points between $[4200s, 4340s]$ served as the previous observed sequence used to condition the latent diffusion model. Figure \ref{fig:pred_results_test} illustrates the predictions for the next 10 frames at $t \in [4350s, 4440s]$ for the 'Temperature' and 'Vx' fields. Consistent with the training set results, the model is capable of capturing board spatial-temporal patterns of the airflow dynamics: for noticeable changes in the temperature field, see the hot spot emerging at the top of the figure through time (Figure \ref{fig:pred_results_test_temp}).
+\textbf{Predicting for the test set:} To further evaluate the model's capability over unseen data, we also evaluated the predictions at $t = 4200s$ in the test set, where the 15 time points between $[4200s, 4340s]$ served as the previous observed sequence used to condition the latent diffusion model. Figure \ref{fig:pred_results_test} illustrates the predictions for the next 10 frames at $t \in [4350s, 4440s]$ for the 'Temperature' and 'Vx' fields. The model shows good generalization ability on the test data consistent with the training set results, capable of capturing board spatial-temporal patterns of the airflow dynamics. For noticeable changes in the temperature field, see the hot spot emerging at the top of the figure through time (Figure \ref{fig:pred_results_test_temp}). 
 
 %TC:ignore
 \begin{figure}[!htb]
@@ -477,7 +477,28 @@ Then, the predicted latent vectors were further decoded using the frame-wise dec
 \end{figure}
 %TC:endignore
 
-However, the results revealed similar issues to those observed in the training set that there were noticeable deviations from local nuances or expected physical behaviours for longer prediction. Additionally, when the test samples are away from the learned data distribution, such as the early stage of the airflow evolution, the model shows less capability to accurately generate predictions similar to the ground truth. Such limitations highlights the need of incorporating prior guidance or physical constraints during the model training \cite{gao2024prediff, bian2024diffusion}.
+However, the results revealed similar issues to those observed in the training set that there were noticeable deviations from local nuances or expected physical behaviours. Additionally, when the test samples are away from the learned data distribution, such as the early stage of the airflow evolution, the model shows less capability to accurately generate predictions similar to the ground truth. Such limitations highlights the need of incorporating prior guidance or physical constraints during the model training \cite{gao2024prediff, bian2024diffusion}.\\
+
+\textbf{Long-term predictions:} To examine the model's ability for long-term predictions as it is crucial for surrogate modeling, we performed the rolling-out prediction starting from $t = 2500s$ over the subsequent 100 time steps (equivalent to 1000s of simulation). Figure \ref{fig:pred_results_long_term} shows the model's predictions in both the latent space and the physical field 'Temperature': While the results are generally accurate in the short term for most dimensions, certain dimensions still exhibit deviations that will accumulate as the rolling-out prediction marches. This issue can be further exemplified in the physical space that the spatial variations will evolve differently in details in the long term compared with the ground truth due to these accumulated error in the latent space. We suspect the use of a 1D latent space of high dimensionality may damage the diffusion model's performance on accurately capturing the temporal relationships across all dimensions. However, since PyTorch currently does not support 4D convolutional layers to extract 3D feature maps within a time sequence, we still decided to use a 1D latent space in this implementation. Given more time, we would consider implementing 4D convolutions to potentially enhance the model's performance.
+
+%TC:ignore
+\begin{figure}[!htb]
+    \centering
+    \begin{subfigure}[t]{0.95\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/long_term_100_latent.png}
+        \caption{Predictions in the latent space for the next 100 time steps $t \in [2650s, 3650s)$, evaluated at random dimensions.}
+    \end{subfigure} \\[8mm]
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/long_term_100.png}
+        \caption{Predictions of xy-slice at z\_idx=16 for the field 'Temperature' for time step $t \in [2650s, 3650s)$, sampled at every 200s.}
+    \end{subfigure}
+    \caption{Long term prediction results for the next 100 time steps $t \in [2650s, 3650s)$.}
+    \label{fig:pred_results_long_term}
+\end{figure}
+%TC:endignore
+
 % The expected results should be broadly in accordance with the established objectives in the following aspects:
 % \begin{itemize}
 %     \item The chosen ROM learns a meaningful representation of the input 3D CFD data in the latent space with significant reduction in dimensionality.
@@ -501,7 +522,6 @@ However, the results revealed similar issues to those observed in the training s
 % \end{figure}
 % %TC:endignore
 
-\subsection{Future Plan}
 % \begin{itemize}
 %     \item Continuously optimize the existing code workflow to accommodate new data, when CFD data from Direk's meeting room becomes available,
 %     \item Retrain the ROM models using Direk's data, and explore alternative methods such as Variational Autoencoders.
@@ -513,14 +533,20 @@ However, the results revealed similar issues to those observed in the training s
 % \end{itemize}
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Conclusion %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
+\section{Conclusion, Limitation and Future Plan}
+In this project, the author has designed a latent diffusion model for predicting the spatial variations of indoor airflow dynamics, and applied it to the simulations of a real classroom at Houndsfield Primary School, London. The model has demonstrated its potential of being adopted in surrogate modeling, which successfully captures the spatial-temporal relationship within the fluid dynamics, and allows to generate realistic predictions for various time steps ahead. It also shows a good generalization ability over unseen time steps in both latent space and decoded physical space.\\
 
+However, the model also exhibits multiple limitations that lie on the following aspects, which needs to be further investigated if more time is given.\\
+
+\textbf{Spatial discrepancies in nuances}: The model may suffer from capturing fine-grained spatial details compared with the original data. We suspect it may be due to the limitation of the first-stage autoencoder. Thus, further research can be conducted by replacing the 1D latent spaces with 3D feature maps, or resort to variational-based architectures such as the VAE or VQVAE \cite{van2017neural, rombach2022highresolution}. Besides, physical constraints may also need to be incorporated to regularize the autoencoder to generate more controllable results.\\ 
+
+\textbf{Long term stability}: To fully apply this model into surrogate modeling, data assimilation techniques, such as 4D-Var, can be considered to guide the diffusion sampling and alleviate the rolling-out prediction error in the long term.\\  
+
+\textbf{Ability to predict for other cases or geometries}: The model was currently trained and tested on a single airflow evolution scenario. To extend its applicability to different initial conditions, incorporating simulations from a broader set of cases into the training data is recommended, as suggested in \cite{yang2023denoising}. For predicting other geometries, domain decomposition methods can be considered to design the compression model in a scale-invariant manner when encountering larger spatial resolutions. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% End %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-
 \bibliography{references}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Appendix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
