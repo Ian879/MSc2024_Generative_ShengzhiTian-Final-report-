@@ -160,9 +160,9 @@
 
 Throughout the journey of my Independent Research Project, I am profoundly grateful for the invaluable support provided by numerous individuals.\\
 
-First things first, I wish to express my deepest appreciation to my supervisors, Dr. Boyang Chen and Dr. Christopher Pain, who have offered me insightful guidance and suggestions throughout the project. Their expertise, commitment, and instructions have not only been essential in helping me address the challenges of this work but have also significantly contributed to my academic development and growth as a researcher. \\
+First things first, I wish to express my deepest appreciation to my supervisors, Dr. Boyang Chen and Dr. Christopher Pain, who have offered me insightful guidance and suggestions throughout the project. Their expertise and commitment have not only been essential in helping me address the challenges of this work but have also significantly contributed to my academic development and growth as a researcher. \\
 
-I want to express my heartfelt gratitude to my friends and everyone who has supported me throughout this incredible year of earning my MSc degree at Imperial College London. Your encouragement has meant the world to me.
+I want to express my heartfelt gratitude to my friends and everyone who has supported me throughout this incredible year of earning my MSc degree at Imperial College London.
 %TC:endignore
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -366,7 +366,7 @@ The specific configurations for training the CAE model and the latent diffusion 
             Batch size & 32 & 32 \\
             Optimizer & Adam & Adam \\
             Learning rate & 5e-4 & 1e-4 \\
-            Latent space dim & 1024 & - \\
+            Latent space dim & 2048 & - \\
             Diffusion steps & - & 1000 \\
             $\mathbf{\beta}$ schedule & - & $[0.0001, 0.02]$ \\
             \bottomrule
@@ -380,7 +380,7 @@ As for the running environment, the system is tested on Python 3.11 with PyTorch
 
 \subsection{Results and discussion}
 \subsubsection{First stage: CAE reconstruction performance}
-Based on the findings by Rombach \textit{et al.} \cite{rombach2022highresolution} and Gao \textit{et al.} \cite{gao2024prediff}, the performance of the Latent Diffusion model is highly dependent on the autoencoder trained in the first stage. Therefore, it is crucial to evaluate the effectiveness of the first-stage autoencoder's ability to compress the grid of high dimensionality into a meaningful latent space and accurately captures the underlying physical dynamics when reconstructing back to the original data. The CAE was configured with a latent size of 1024, which achieved a compression ratio of approximately 1792 ($7 \times 32 \times 64 \times 128 / 1024$). Then, the CAE's reconstruction performance was assessed in terms of four fields 'CO2 Tracer', 'Temperature', 'Vx', and 'Vy'. These results were examined and presented as xy-slices at a height corresponding to z\_idx=16, at time points of $t = 1500s, 3000s, 4500s$ respectively. The former two time points are from the training set while the data at $t = 4500s$ were drawn from the unseen data.\\
+Based on the findings by Rombach \textit{et al.} \cite{rombach2022highresolution} and Gao \textit{et al.} \cite{gao2024prediff}, the performance of the Latent Diffusion model is highly dependent on the autoencoder trained in the first stage. Therefore, it is crucial to evaluate the effectiveness of the first-stage autoencoder's ability to compress the grid of high dimensionality into a meaningful latent space and accurately captures the underlying physical dynamics when reconstructing back to the original data. The CAE was configured with a latent size of 2048, which achieved a compression ratio of approximately 896 ($7 \times 32 \times 64 \times 128 / 2048$). Then, the CAE's reconstruction performance was assessed in terms of four fields 'CO2 Tracer', 'Temperature', 'Vx', and 'Vy'. These results were examined and presented as xy-slices at a height corresponding to z\_idx=16, at time points of $t = 1500s, 3000s, 4500s$ respectively. The former two time points are from the training set while the data at $t = 4500s$ were drawn from the unseen data.\\
 
 As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that the CAE model can effectively captures the board physical patterns of the airflow dynamics across different time levels for each physical field in interest. The model also demonstrates similar performance over the unseen data. However, there is noticeable information loss before and after the reconstruction, where the model struggles to capture the nuances of the physical characteristics of the airflow dynamics. When finer details of the spatial variations are required, the model tends to confuse between different subtle nuances and leads to coarser reconstructions.
 %TC:ignore
@@ -425,7 +425,7 @@ As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that
     \begin{subfigure}[t]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/latent_results.png}
-        \caption{Prediction results of all 1024 dimensions of the latent vectors for the next 10 time steps.}
+        \caption{Prediction results of all 2048 dimensions of the latent vectors for the next 10 time steps.}
     \end{subfigure} \\[8mm]
     \begin{subfigure}[t]{0.7\textwidth}
         \centering
