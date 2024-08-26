@@ -180,7 +180,7 @@ I want to express my heartfelt gratitude to my friends and everyone who has supp
 \phantomsection
 \begin{abstract}
 \addcontentsline{toc}{section}{Abstract}
-\noindent Indoor spaces have been the primary habitats for modern human life, and it is crucial for people to understand and control indoor air quality to ensure their health and comfort, mitigating risks of getting infected by airborne pollutants. Numerous studies have delved into modelling indoor airflow dynamics to enhance ventilation systems, understand pollutant dispersion, and design more efficient air purification methods. Traditional forecasting methods, such as Computational Fluid Dynamics (CFD), have been demonstrated to provide high-fidelity field simulations but with significant computational complexity. However, the recent rise of deep learning presents a transformative opportunity. Deep neural networks have unveiled a promising alternative to CFD methods, offering accurate, faster and more scalable solutions for fluid dynamics prediction. Hence, this project implemented a two-stage predictive framework in a practical scenario within an classroom in London. The first stage involved a Reduced-Order Model to compress high-dimensional CFD data into a lower-dimensional latent space. Then, a Latent Diffusion Model (LDM) has been employed for accurate predictions of the airflow fields within the domain in interest.
+\noindent Indoor spaces have been the primary habitats for modern human life, and it is crucial for people to understand and control indoor air quality to ensure their health and comfort, mitigating risks of getting infected by airborne pollutants. Numerous studies have delved into modelling indoor airflow dynamics to enhance ventilation systems, understand pollutant dispersion, and design more efficient air purification methods. Traditional forecasting methods, such as Computational Fluid Dynamics (CFD), have been demonstrated to provide high-fidelity field simulations but with significant computational complexity. However, the recent rise of deep learning presents a transformative opportunity. Deep neural networks have unveiled a promising alternative to CFD methods, offering accurate, faster and more scalable solutions for fluid dynamics prediction. Hence, this project implemented a two-stage predictive framework in a practical scenario within an classroom in London. The first stage involved a Reduced-order Autoencoder to compress high-dimensional CFD data into a lower-dimensional latent space. Then, a Latent Diffusion Model (LDM) has been employed for accurate predictions of the airflow fields within the domain in interest.
 
 \noindent \textbf{Keywords:} Latent Diffusion models (LDMs), Indoor airflow dynamics, Computational fluid dynamics, Reduced-Order Modelling (ROM).
 \end{abstract}
@@ -207,7 +207,7 @@ Therefore, the main contributions and objectives of this research are listed as 
 % commented for word limit
 
 \subsection{Computational Fluid Dynamics methods}
-Numerical methods, such as Computational Fluid Dynamics (CFD), have been extensively adopted in various industry applications and engineering problems to deliver high-fidelity simulations of physical systems \cite{Lassila2014}. Specifically, CFD involves a diverse range of methods designed to solve the coupled nonlinear PDEs that govern the fluid motion, whose history can be dated back to the 1950s even before electric computers were developed \cite{Bhattacharyya21}. Classical CFD methods, such as the Navier-Stokes and Lattice-Boltzmann methods, can provide high-fidelity field simulations at a cost of significantly high computational cost, particularly for simulations involving high Reynolds numbers \cite{shu2023physics}. Several studies have been established aiming at accelerating traditional CFD methods. Zuo and Chen \cite{zuo2010fast} have proposed a Fast Fluid Dynamics method capable of simulating the fluid state with a considerably faster time with compromise in some accuracy. Besides, a hybrid RANS-LES model have been designed to enhance the computational efficiency of CFD while preserving fidelity \cite{walters2013investigation}. However, this method is still not capable of conducting rapid, real-time simulations for predicting various physical quantities in complex airflow scenarios, which is crucial for effective HVAC system control \cite{shu2023physics}.
+Numerical methods, such as Computational Fluid Dynamics (CFD), have been extensively adopted in various industry applications and engineering problems to deliver high-fidelity simulations of physical systems \cite{Lassila2014}. Specifically, CFD involves a diverse range of methods designed to solve the coupled nonlinear PDEs that govern the fluid motion, whose history can be dated back to the 1950s even before electric computers were developed \cite{Bhattacharyya21}. Classical CFD methods, such as the Navier-Stokes and Lattice-Boltzmann methods, can provide high-fidelity field simulations at a cost of significantly high computational cost, particularly for simulations involving high Reynolds numbers \cite{shu2023physics}. Several studies have been established aiming at accelerating traditional CFD methods. Zuo and Chen \cite{zuo2010fast} have proposed a Fast Fluid Dynamics method capable of simulating the fluid state with a considerably faster time with compromise in some accuracy. However, this method is still not capable of conducting rapid, real-time simulations for predicting various physical quantities in complex airflow scenarios, which is crucial for effective modeling in HVAC systems \cite{shu2023physics}.
 
 \subsection{Reduced-order modelling}
 Due to the substantial computational costs associated with CFD simulations, developing a reduced-order model (ROM) has long been a prominent research focus. Usually, A ROM involves dimensionality reduction techniques to identify a reduced space that the whole system can be projected, or intuitively compressed onto \cite{Bhattacharyya21, Menier2023CDROM}. Many efforts have been emphasized on identifying different methods to design a cost-efficient, but accurate latent representation of the system. Among them, the most adopted one is Proper Orthogonal Decomposition (POD), which is a linear method based on Singular Value Decomposition (SVD) that seeks to find the most important eigenvalues and eigenmodes within the original system \cite{dowell2023reduced}. It has demonstrated great success in reducing linear systems or more complex Navier-Stokes systems \cite{Menier2023CDROM, berkooz1993proper}, which are usually encountered in indoor ventilation scenarios.\\ 
@@ -250,7 +250,7 @@ As illustrated in Figure \ref{fig:workflow}, the input observation sequence $X_{
 %TC:endignore
 
 \subsection{Reduced-order model: frame-wise convolutional autoencoder}
-Reduced-order modelling typically involves dimensionality reduction methods, which are essential for handling the fine-grained 3D structural data generated by CFD simulations \cite{zuo2010fast, masoumi2022review}. In this work, a convolutional autoencoder (CAE) is implemented that serves a dual purpose: it acts as a dimensionality reduction technique and simultaneously learns meaningful latent embeddings for the use of the second-stage prediction model. The training of this CAE model adheres to the standard autoencoder training framework, where the objective is defined as a reconstruction task. This process involves two main steps: the input data is first compressed into a lower-dimensional latent space, and then the original data is reconstructed back from this latent representation. By minimizing the reconstruction error, the CAE model not only learns to efficiently reconstruct the original data, but learns a meaningful encoder to compress the original data into lower dimensions. Besides, although the dataset used may contained temporal information of the whole domain at different time steps. The input and output of this CAE model are treated in a frame-wise manner without taking considering of temporal relationships between consecutive time steps. \\ 
+Reduced-order modelling typically involves dimensionality reduction methods, which are essential for handling the fine-grained 3D structural data generated by CFD simulations \cite{zuo2010fast, masoumi2022review}. In this work, a convolutional autoencoder (CAE) is implemented that serves a dual purpose: it acts as a dimensionality reduction technique and simultaneously learns meaningful latent embeddings for the use of the second-stage prediction model. The training of this CAE model adheres to the standard autoencoder training framework, where the objective is defined as a reconstruction task. By minimizing the reconstruction error, the CAE model not only learns to efficiently reconstruct the original data, but learns a meaningful encoder to compress the original data into lower dimensions. Besides, although the dataset used may contained temporal information of the whole domain at different time steps. The input and output of this CAE model are treated in a frame-wise manner without taking considering of temporal relationships between consecutive time steps. \\ 
 
 \textbf{Training workflow}: As shown in Figure \ref{fig:cae_training_workflow}, the frame-wise CAE contains an encoder $\mathcal{E}$ and a decoder $\mathcal{D}$ that first encodes the training grid into a 1D latent space, and then reconstructed back to the physical space. Supposed that the input grids in a training batch at random time steps are given as:
 $$
@@ -301,7 +301,7 @@ As stated in the original Latent Diffusion Model paper \cite{rombach2022highreso
 \end{equation}
 where $z_{cond} \in \mathbb{R}^{latent\_dim}$, is a one-dimensional latent vector of the input previous-step sequence, encoded by the frame-wise encoder $\mathcal{E}$. Given this latent embedding $z_{cond}$, the denoising process can be started from Gaussian noise $z_T \sim \mathcal{N}(0, \mathbf{I})$, to the true data distribution $z_0 \sim p(z | z_{cond})$. This indicates that during inference, the spatial-temporal prediction problem can be transformed into a conditional generation problem in the latent space as long as the latent embedding $z_{cond}$ is given. And finally, through the frame-wise decoder $\mathcal{D}$, the predicted latent embedding of future frames can be then decoded back to the physical space. \\
 
-\textbf{Training workflow}: During the training process, the LDM is parameterized to learn the conditional probability distribution $p\left(z_{0: T}\right|z_{cond})$ as stated above. Instead of directly predicting over the latent embedding $z_{t-1}$, an alternative way is to train the model to learn the noise $\epsilon_t$ transited at each time step $t$ \cite{rombach2022highresolution, gao2024prediff}. Specifically, as illustrated in Figure \ref{fig:ldm_training}, when starting with a latent target sequence $z_0$, Gaussian noise is added in the forward diffusion process over each time step $t \in [1, T]$. Then, the Sinusoidal Positional Encoding method, which has been widely used in Transformer architectures \cite{vaswani2017attention}, is adopted to incorporate the positional information of each diffusion time step $t$ into the network. The details of sinusoidal positional encoding involves mapping a temporal position onto a sin wave, where for a given scalar $t$, it is encoded into a vector $PE(t)$ via:
+\textbf{Training workflow}: During the training process, instead of directly predicting over the latent embedding $z_{t-1}$, an alternative way is to train the model to learn the noise $\epsilon_t$ transited at each time step $t$ \cite{rombach2022highresolution, gao2024prediff}. Specifically, as illustrated in Figure \ref{fig:ldm_training}, when starting with a latent target sequence $z_0$, Gaussian noise is added in the forward diffusion process over each time step $t \in [1, T]$. Then, the Sinusoidal Positional Encoding method, which has been widely used in Transformer architectures \cite{vaswani2017attention}, is adopted to incorporate the positional information of each diffusion time step $t$ into the network. The details of sinusoidal positional encoding involves mapping a temporal position onto a sin wave, where for a given scalar $t$, it is encoded into a vector $PE(t)$ via:
 \begin{align}
     &PE(t)_{2i} = \sin (\frac{t}{10000^{2i/d}}) \nonumber\\
     &PE(t)_{2i+1} = \cos (\frac{t}{10000^{2i/d}})
@@ -437,7 +437,7 @@ As illustrated in Figure. \ref{fig:cae_recon_results}, the result indicates that
 \end{figure}
 %TC:endignore
 
-Then, the predicted latent vectors were further decoded using the frame-wise decoder $\mathcal{D}$, to evaluate prediction performance in the physical space. Figure \ref{fig:pred_results_training} presents the predictions for the fields 'Temperature' and 'Vx' at $t \in [2650s, 2740s]$ in the training set for the next 10 time steps. These results indicate that the latent diffusion model effectively learns meaningful temporal patterns within the fluid field. However, the results seem to have discrepancies in details compared to the ground truth, and some predictions may also violate physical laws, which may generate extremely high temperature values or irregular fluid patterns. We argue that these issues may stem from the limitations of the first-stage autoencoder, which was trained on a single case of the evolution of the indoor airflow, consisting of only 500 frames. Besides, the model was not regularized with any physical laws or guidance during training, which may also likely contribute to these unrealistic predictions. \\
+Then, the predicted latent vectors were further decoded using the frame-wise decoder $\mathcal{D}$, to evaluate prediction performance in the physical space. Figure \ref{fig:pred_results_training} presents the predictions for the fields 'Temperature' and 'Vx' at $t \in [2650s, 2740s]$ in the training set for the next 10 time steps. Besides, prediction results of other fields at different slices can be found at Appendix \ref{fig:other_preds}, \ref{fig:other_preds_xy}. These results indicate that the latent diffusion model effectively learns meaningful temporal patterns within the fluid field. However, the results seem to have discrepancies in details compared to the ground truth, and some predictions may also violate physical laws, which may generate extremely high temperature values or irregular fluid patterns. We argue that these issues may stem from the limitations of the first-stage autoencoder, which was trained on a single case of the evolution of the indoor airflow, consisting of only 500 frames. Besides, the model was not regularized with any physical laws or guidance during training, which may also likely contribute to these unrealistic predictions. \\
 
 %TC:ignore
 \begin{figure}[!htb]
@@ -574,8 +574,70 @@ However, the model also exhibits multiple limitations that lie on the following 
     \end{subfigure} \\[5mm]
     \caption{Overview of the implemented model architectures in this project.}
 \end{figure}
-%TC:endignore
 \clearpage
-\section{Other prediction results}
 
+\section{Other prediction results}
+\begin{figure}[htbp]
+    \renewcommand{\figurename}{Figure}
+    \renewcommand{\thefigure}{B2}
+    \centering
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/co2_10_2650.png}
+        \caption{CO2 Tracer predictions for the next 10 time steps $t \in [2650s, 2740s]$.}
+        \label{fig:co2_10_2650}
+    \end{subfigure} \\[6mm]
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/humid_10_2650.png}
+        \label{fig:humid_10_2650}
+        \caption{Humidity predictions for the next 10 time steps $t \in [2650s, 2740s]$.}
+    \end{subfigure}
+    \caption{Other prediction results of xy-slice at z\_idx=16 for the fields 'CO2' and 'Humidity' for time step $t \in [2650s, 2740s]$ in the training set.}
+    \label{fig:other_preds}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[htbp]
+    \renewcommand{\figurename}{Figure}
+    \renewcommand{\thefigure}{B3}
+    \centering
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/co2_10_2650_yidx.png}
+        \caption{CO2 Tracer predictions for the next 10 time steps $t \in [2650s, 2740s]$ of xz-slice at y\_idx=32.}
+        \label{fig:co2_10_2650_xz}
+    \end{subfigure} \\[5mm]
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/humid_10_2650_yidx.png}
+        \label{fig:humid_10_2650_xz}
+        \caption{Humidity predictions for the next 10 time steps $t \in [2650s, 2740s]$ of xz-slice at y\_idx=32.}
+    \end{subfigure}
+    \caption{Prediction results of other slices (xz-slice at y\_idx=32) for the four fields: 'CO2', 'Humidity', 'Temperature', and 'Vx' for time step $t \in [2650s, 2740s]$.}
+    \label{fig:other_preds_xy}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[htbpt] \ContinuedFloat
+    \renewcommand{\figurename}{Figure}
+    \renewcommand{\thefigure}{B3}
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/temp_10_2650_yidx.png}
+        \caption{Temperature predictions for the next 10 time steps $t \in [2650s, 2740s]$ of xz-slice at y\_idx=32.}
+        \label{fig:temp_10_2650_xz}
+    \end{subfigure} \\[10mm]
+    \begin{subfigure}[t]{0.99\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/vx_10_2650_yidx.png}
+        \caption{Vx predictions for the next 10 time steps $t \in [2650s, 2740s]$ of xz-slice at y\_idx=32.}
+        \label{fig:vx_10_2650_xz}
+    \end{subfigure}
+    \label{fig:other_preds_xy_2}
+    \caption{Prediction results of other slices (xz-slice at y\_idx=32) for the four fields: 'CO2', 'Humidity', 'Temperature', and 'Vx' for time step $t \in [2650s, 2740s]$.}
+\end{figure}
+%TC:endignore
 \end{document}
